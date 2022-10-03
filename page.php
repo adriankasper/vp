@@ -1,5 +1,5 @@
 <?php
-	require_once "../config.php";
+	require_once "../../config.php";
 	//echo $server_host;
 	$author_name = "Adrian Käsper";
 	$full_time_now = date("d.m.Y H:i:s");
