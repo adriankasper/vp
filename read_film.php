@@ -1,58 +1,41 @@
 <?php
-	require_once "../config.php";
-	
-	//loon andmebaasiga ühenduse
-	// server , kasutaja, parool, andmebaas 
-		
-	$db_connection = new mysqli($server_host, $server_user_name, $server_password, $database);
-		
-	//määran suhtlemisel kasutatava kooditabeli
-		
-	$db_connection->set_charset("utf8");
-	
-	//valmistame ette andmete saatmise SQL käsu
-		
-	$stmt = $db_connection->prepare("SELECT pealkiri, aasta, kestus, zanr FROM film");
-	echo $db_connection->error;
-	
-	//seome saadavad andmed muutujatega
-	
-	$stmt->bind_result($pealkiri_db, $aasta_db, $kestus_db, $zanr_db);
-	
-	//täidame käsu
-	
-	$stmt->execute();
-	// kui saan ühe kirje 
-	//if($stmt->fetch());
-	//kui tuleb teadmata arv kirjeid
-	
-	$film_html = null;
-	while($stmt->fetch())
-	{
-		//echo $comment_from_db;
-		//<p>pealkiri, aasta xxxx, kestus xx min, zanr</p>
-	$film_html .= "<p>" .$pealkiri_db .", aastal: " .$aasta_db;
-	$film_html .= ", kestus " .$kestus_db ."min, " .$zanr_db ."</p>\n";
+	require_once ("../../config.php");
+
+	session_start();
+	if(!isset($_SESSION["user_id"])){
+		header("Location: page.php");
+		exit();
 	}
+
+	$conn = new mysqli($server_host, $server_user_name, $server_password, $database);
+	$conn-> set_charset("utf8");
 	
-	//sulgeme k2su
+	$stmt = $conn->prepare("SELECT PEALKIRI, aasta, kestus, zanr, tootja, lavastaja FROM film");
+	echo $conn->error; 
+	$stmt->bind_result($pealkiri_from_db, $aasta_from_db, $kestus_from_db, $zanr_from_db, $tootja_from_db, $lavastaja_from_db);
+	$stmt->execute();
+	$film_html = null;	
+	while($stmt->fetch()){
+		$film_html .= "<h3>" .$pealkiri_from_db ."</h3>". "<ul>". "<li>" ." Valmimisaasta: " .$aasta_from_db . "</li>". "<li>" ." Kestus: " .$kestus_from_db . " minutit". "</li>". "<li>" ." Žanr: " .$zanr_from_db . "</li>". "<li>" ." Tootja: " .$tootja_from_db . "</li>". "<li>" ." Lavastaja: " .$lavastaja_from_db . "</li>". "</ul>";
+	}
+
 	$stmt->close();
+	$conn->close();
 	
-	//sulgeme andmebaasi uhenduse
-	$db_connection->close();
+		if(isset($_GET["logout"])){
+		session_destroy();
+		header("Location: page.php");
+		exit();
+	}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="et">
-<head>
-	<meta charset="utf-8">
-	<title>Filmide lapang</title>
-</head>
-
 <body>
 
 <?php echo $film_html; ?>
-
+<ul>
+	<li><a href="?logout=1">Logi välja</a></li>
+</ul>
 </body>
-
-</html>

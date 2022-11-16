@@ -1,5 +1,9 @@
 <?php
+	session_start();
 	require_once "../../config.php";
+	require_once "fnc_user.php";
+	require_once "fnc_gallery.php";
+	
 	//echo $server_host;
 	$author_name = "Adrian Käsper";
 	$full_time_now = date("d.m.Y H:i:s");
@@ -27,16 +31,22 @@
 		if($hours_now < 8){
 			$part_of_day = "uneaeg";
 		}
-		if($hours_now >= 8){
+		if($hours_now >= 8 and $hours_now < 23){
 			$part_of_day = "vaba aeg";
+		}
+		if($hours_now >= 23){
+			$part_of_day = "mõnusa logelemise aeg";
 		}
 	}
 		if($weekday_now == 7){
 		if($hours_now < 9){
 			$part_of_day = "uneaeg";
 		}
-		if($hours_now >= 9){
+		if($hours_now >= 9 and $hours_now < 19){
 			$part_of_day = "vaba aeg";
+		}
+		if($hours_now >= 19){
+			$part_of_day = "uueks nädalaks valmistumise aeg";
 		}
 	}
 	
@@ -56,7 +66,7 @@
 	//echo mt_rand(0, count($weekdaynames_et) -1);
 	//echo $weekdaynames_et[mt_rand(0, count($weekdaynames_et) -1)];
 	
-	$old_wisdom_list = ["Mehe kodu on maailm, naise maailm on kodu", "Põrsast kotis ei osteta", "Tühi kott ei seisa püsti", "Vana karu tantsima ei õpi", "Enda silmas palki ei näe, teise silmas pindu küll"];
+	$old_wisdom_list = ["Tarkus ei küsi süüa, vaid annab süüa.", "Homseks hoia leiba, mitte tööd.", "Hommik on õhtust targem.", "Kus viga näed laita, seal tule ja aita.", "Sõnahoobid on vahest valusamad, kui käehoobid.", "Ega rumalaid künta ja külvata, nemad kasvavad ise.", "Laps on perekonna peegel.", "Väikesed lapsed, väiksed mured, suured lapsed, suured mured.", "Kes hunti kardab, see ärgu metsa mingu.", "Ei meri sellest alane, kui koer äärest lakub.", "Targad sõdivad sõnaga, rumalad rusikaga.", "Ära vanasse kaevu enne sülita, kui uus valmis."];
 	//$random_wisdom = $old_wisdom_list[mt_rand(0, count($old_wisdom_list) - 1)];
 	
 	//juhuslik foto
@@ -142,7 +152,7 @@
 			//loon andmebaasiga ühenduse
 			//server, kasutaja, parool, andmebaas
 			$conn = new mysqli($server_host, $server_user_name, $server_password, $database);
-			//määran suhtlemisel kasuatatava kooditabeli
+			//määran suhtklemisel kasuatatava kooditabeli
 			$conn->set_charset("utf8");
 			//valmistame ette andmete saatmise SQL käsu
 			$stmt = $conn->prepare("INSERT INTO vp_daycomment (comment, grade) values(?,?)");
@@ -150,7 +160,7 @@
 			//seome SQL käsu õigete andmetega
 			//andmetüübid  i - integer   d - decimal    s - string
 			$stmt->bind_param("si", $comment, $grade);
-			if ($stmt->execute()) {
+			if($stmt->execute()){
 				$grade = 7;
 				$comment = null;
 			}
@@ -161,6 +171,11 @@
 		}
 	}
 	
+	$login_error = null;
+	if(isset($_POST["login_submit"])){
+        //login sisse
+		$login_error = sign_in($_POST["email_input"], $_POST["password_input"]);
+    }
 ?>
 <!DOCTYPE html>
 <html lang="et">
@@ -169,14 +184,25 @@
 	<title><?php echo $author_name;?> programmeerib veebi</title>
 </head>
 <body>
-<img src="media/vp_banner_gs.png" alt="bänner">
+<img src="pics/vp_banner_gs.png" alt="bänner">
 <h1><?php echo $author_name;?> programmeerib veebi</h1>
 <p>See leht on loodud õppetöö raames ja ei sisalda tõsiseltvõetavat sisu!</p>
 <p>Õppetöö toimus <a href="https://www.tlu.ee" target="_blank">Tallinna Ülikoolis</a> Digitehnoloogiate instituudis.</p>
+<hr>
+<h2>Logi sisse</h2>
+<form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+	<input type="email" name="email_input" placeholder="email">
+	<input type="password" name="password_input" placeholder="salasõna">
+	<input type="submit" name="login_submit" value="Logi sisse"><span><strong><?php echo $login_error; ?></strong></span>
+</form>
+<p>Või <a href="add_user.php">loo</a> endale kasutaja!</p>
+<hr>
 <p>Lehe avamise hetk: <?php echo $weekdaynames_et[$weekday_now - 1] .", " .$full_time_now;?></p>
 <p>Praegu on <?php echo $part_of_day;?>.</p>
 <p>Semestri pikkus on <?php echo $semester_duration_days;?> päeva. See on kestnud juba <?php echo $from_semester_begin_days; ?> päeva.</p>
-<img src="media/tlu_2.jpg" alt="Tallinna Ülikooli klaaslagi">
+<h2>Kasutajate üleslaetud foto</h2>
+<?php echo show_latest_public_photo(); ?>
+<hr>
 <p>Väike tarkusetera: <?php echo $old_wisdom_list[mt_rand(0, count($old_wisdom_list) - 1)]; ?></p>
 <hr>
 <form method="POST">
@@ -205,7 +231,4 @@
 	<input type="submit" id="photo_submit" name="photo_submit" value="Määra foto">
 </form>
 <?php echo $photo_html; ?>
-<hr>
-
-</body>
-</html>
+<?php require_once "footer.php";?>
