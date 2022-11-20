@@ -3,6 +3,15 @@
 	require_once "../../config.php";
 	require_once "fnc_user.php";
 	require_once "fnc_gallery.php";
+	/* require_once "classes/Example.class.php";
+	//klassi demo
+	$our_variable = new Example(9);
+	$my_variable = new Example(4);
+	echo $our_variable->public_value;
+	$my_variable->add();
+	unset($our_variable);
+	unset($my_variable);
+	echo $our_variable->public_value; */
 	
 	//echo $server_host;
 	$author_name = "Adrian Käsper";
@@ -191,18 +200,19 @@
 <hr>
 <h2>Logi sisse</h2>
 <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-	<input type="email" name="email_input" placeholder="email">
+	<input type="email" name="email_input" placeholder="Kasutajatunnus ehk e-post">
 	<input type="password" name="password_input" placeholder="salasõna">
 	<input type="submit" name="login_submit" value="Logi sisse"><span><strong><?php echo $login_error; ?></strong></span>
 </form>
 <p>Või <a href="add_user.php">loo</a> endale kasutaja!</p>
 <hr>
-<p>Lehe avamise hetk: <?php echo $weekdaynames_et[$weekday_now - 1] .", " .$full_time_now;?></p>
-<p>Praegu on <?php echo $part_of_day;?>.</p>
-<p>Semestri pikkus on <?php echo $semester_duration_days;?> päeva. See on kestnud juba <?php echo $from_semester_begin_days; ?> päeva.</p>
 <h2>Kasutajate üleslaetud foto</h2>
 <?php echo show_latest_public_photo(); ?>
 <hr>
+<p>Lehe avamise hetk: <?php echo $weekdaynames_et[$weekday_now - 1] .", " .$full_time_now;?></p>
+<p>Praegu on <?php echo $part_of_day;?>.</p>
+<p>Semestri pikkus on <?php echo $semester_duration_days;?> päeva. See on kestnud juba <?php echo $from_semester_begin_days; ?> päeva.</p>
+<img src="pics/tlu_39.jpg" alt="Tallinna Ülikooli ajalooline Terra õppehoone">
 <p>Väike tarkusetera: <?php echo $old_wisdom_list[mt_rand(0, count($old_wisdom_list) - 1)]; ?></p>
 <hr>
 <form method="POST">

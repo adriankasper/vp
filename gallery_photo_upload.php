@@ -15,6 +15,7 @@
 	
 	require_once "fnc_photo_upload.php";
 	require_once "fnc_general.php";
+	require_once "classes/Photoupload.class.php";
 
 	$file_type = null;
 	$photo_error = null;
@@ -54,34 +55,46 @@
 				if(empty($photo_error)){
 					//teeme pildi "väiksemaks"
 					//loome pikslikogumi (justkui avame foto PhotoShopis)
-					$temp_photo = create_image($_FILES["photo_input"]["tmp_name"], $file_type);
+					//$temp_photo = create_image($_FILES["photo_input"]["tmp_name"], $file_type);
+					
+					//klass
+					$upload = new Photoupload($_FILES["photo_input"]);
+					
 					//muudame pildi suurust
-					$normal_photo = resize_photo($temp_photo, $normal_photo_max_w, $normal_photo_max_h);
+					//$normal_photo = resize_photo($temp_photo, $normal_photo_max_w, $normal_photo_max_h);
+					
+					$upload->resize_photo($normal_photo_max_w, $normal_photo_max_h);
+					
 					//salvestame v'iksemaks tehtud pildi
-					$photo_error = save_photo($normal_photo, $gallery_photo_normal_folder .$photo_file_name, $file_type);
-					if(empty($photo_error)){
+					//$photo_error = save_photo($normal_photo, $gallery_photo_normal_folder .$photo_file_name, $file_type);
+					$upload->save_photo($gallery_photo_normal_folder .$photo_file_name);
+					if(empty($upload->error)){
 						//teeme pisipildi (thumbnail)
-						$thumbnail = resize_photo($temp_photo, $thumbnail_photo_w, $thumbnail_photo_h, false);
-						$photo_error = save_photo($thumbnail, $gallery_photo_thumbnail_folder .$photo_file_name, $file_type);
+						//$thumbnail = resize_photo($temp_photo, $thumbnail_photo_w, $thumbnail_photo_h, false);
+						$upload->resize_photo($thumbnail_photo_w, $thumbnail_photo_h, false);
+						//$photo_error = save_photo($thumbnail, $gallery_photo_thumbnail_folder .$photo_file_name, $file_type);
+						$upload->save_photo($gallery_photo_thumbnail_folder .$photo_file_name);
 					}
 					
-					if(empty($photo_error)){
+					if(empty($upload->error)){
 					// ajutine fail: $_FILES["photo_input"]["tmp_name"]
-						if(move_uploaded_file($_FILES["photo_input"]["tmp_name"], $gallery_photo_original_folder .$photo_file_name) == false){
-							$photo_error = 1;
-						}
+						//if(move_uploaded_file($_FILES["photo_input"]["tmp_name"], $gallery_photo_original_folder .$photo_file_name) == false){
+							//$photo_error = 1;
+						//}
+						$upload->move_original_photo($gallery_photo_original_folder .$photo_file_name);
 					}
 					
-					if(empty($photo_error)){
+					if(empty($upload->error)){
 						$photo_error = store_photo_data($photo_file_name, $alt, $privacy);
 					}
-					if(empty($photo_error)){
+					if(empty($upload->error)){
 						$photo_error = "Pilt edukalt üles laetud!";
 						$alt = null;
 						$privacy = 1;
 					} else {
 						$photo_error = "Pildi üleslaadimisel tekkis tõrkeid!";
 					}
+					unset($upload);
 				}
 			}
 		}//if photo_submit
